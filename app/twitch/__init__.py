@@ -2,12 +2,12 @@ import requests
 import datetime
 import time
 import re
-import math
+from math import floor
+
 
 def get_channel_videos(channel):
 	url = 'https://api.twitch.tv/kraken/channels/{}/videos?broadcasts=true'.format(channel)
 	r = requests.get(url)
-	print(r.status_code)
 	return r.json()
 
 
@@ -31,19 +31,21 @@ def get_latest_video_data(json_data):
 	try:
 		data['recorded_at'] = datetime_to_epoch(json_data['videos'][0]['recorded_at'])
 		data['url'] = json_data['videos'][0]['url']
-	except KeyError:
+		data['length'] = json_data['videos'][0]['length']
+	except (KeyError, IndexError):
 		return None
 	return data 
 
 def get_replay(channel, offset):
+	channel = channel.strip('#')
 	delay = 20
 	json_data = get_channel_videos(channel)
 	replay_data = get_latest_video_data(json_data)
 
 	if replay_data:
 		request_time = int(time.time()) + 4*60*60
-		replay_time_total = (request_time - offset - delay) -replay_data['recorded_at']
-		replay_min = int(math.floor(replay_time_total / 60))
+		replay_time_total = request_time - replay_data['recorded_at'] - offset - delay
+		replay_min = int(floor(replay_time_total / 60))
 		replay_sec = replay_time_total % 60
 		return(replay_data['url'] + '?t={0}m{1}s'.format(replay_min, replay_sec))
 	else:

@@ -1,6 +1,7 @@
 import socket
 import sys
 import re
+import app.twitch
 
 
 class IrcConnection(object):
@@ -30,6 +31,7 @@ class IrcConnection(object):
 			print('Joining %s' % ch)
 
 		while True:
+			last_request = 0
 			self.readbuffer = self.readbuffer + s.recv(4096).decode()
 			temp = self.readbuffer.split('\n')
 			self.readbuffer = temp.pop()
@@ -47,7 +49,12 @@ class IrcConnection(object):
 
 def check_if_cmd(message, s):
 	if message['text'] == ':!replay':
-		s.send('PRIVMSG {} :Replay requested\r\n'.format(message['channel']).encode())
+		replay_url = app.twitch.get_replay(message['channel'], 90)
+		print(replay_url)
+		if replay_url:
+			s.send('PRIVMSG {0} :Replay VOD {1}\r\n'.format(message['channel'], replay_url).encode())
+		else:
+			s.send('PRIVMSG {0} :VOD not available yet.\r\n'.format(message['channel']).encode())
 
 def get_message_type(msg):
 	p = re.compile(r'PRIVMSG')
@@ -70,7 +77,7 @@ def split_line(line):
 	# Get channel
 	message['channel'] = line[2]
 
-	# Get message
+	# Get text
 	text = []
 	for i in range(3, len(line)):
 		text.append(line[i])
