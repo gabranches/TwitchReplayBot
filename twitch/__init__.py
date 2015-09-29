@@ -6,11 +6,13 @@ from math import floor
 
 
 def get_channel_videos(channel):
+	'''Returns a channel's latest VODs.'''
 	url = 'https://api.twitch.tv/kraken/channels/{}/videos?broadcasts=true'.format(channel)
 	r = requests.get(url)
 	return r.json()
 
 def datetime_to_epoch(datetime_str):
+	'''Converts datetime to unix timestamp.'''
 	p = re.compile(r'(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})Z')
 	m = p.match(datetime_str)
 	if m:
@@ -26,6 +28,7 @@ def datetime_to_epoch(datetime_str):
 	return time_epoch
 
 def get_latest_video_data(json_data):
+	'''Returns the most recent VOD info.'''
 	data = {}
 	try:
 		data['recorded_at'] = datetime_to_epoch(json_data['videos'][0]['recorded_at'])
@@ -36,7 +39,7 @@ def get_latest_video_data(json_data):
 	return data 
 
 def get_replay(channel, offset):
-	channel = channel.strip('#')
+	'''Returns the url for the replay if it exists.'''
 	delay = 20
 	json_data = get_channel_videos(channel)
 	replay_data = get_latest_video_data(json_data)

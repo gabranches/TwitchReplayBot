@@ -3,7 +3,8 @@ from config import CLIENT_ID, REDIRECT_URI, CLIENT_SECRET, CHANNELS, TOKEN
 
 
 def run():
-	irc_conn = IrcConnection(TOKEN, CHANNELS)
+	channel_list = CHANNELS.split(',')
+	irc_conn = IrcConnection(TOKEN, channel_list)
 	irc_conn.connect()
 
 
