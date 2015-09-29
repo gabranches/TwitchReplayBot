@@ -1,5 +1,5 @@
 from irc import IrcConnection
-from config import CLIENT_ID, REDIRECT_URI, CLIENT_SECRET, CHANNELS, TOKEN
+from config import CLIENT_ID, CLIENT_SECRET, CHANNELS, TOKEN
 
 
 def run():
