@@ -53,7 +53,7 @@ class IrcConnection(object):
 def check_if_cmd(message, s):
 	'''Check if the message contains a request for a replay'''
 	if message['text'] == ':!replay':
-		replay_url = app.twitch.get_replay(message['channel'], 90)
+		replay_url = twitch.get_replay(message['channel'], 90)
 		print(replay_url)
 		if replay_url:
 			s.send('PRIVMSG {0} :Replay VOD {1}\r\n'.format(message['channel'], replay_url).encode())
