@@ -1,3 +1,11 @@
-from app import app
+from irc import IrcConnection
+from config import CLIENT_ID, REDIRECT_URI, CLIENT_SECRET, CHANNELS, TOKEN
 
-app.run(debug=True)
+
+def run():
+	irc_conn = IrcConnection(TOKEN, CHANNELS)
+	irc_conn.connect()
+
+
+if __name__ == '__main__':
+	run()
