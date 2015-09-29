@@ -40,6 +40,7 @@ def get_latest_video_data(json_data):
 
 def get_replay(channel, offset):
 	'''Returns the url for the replay if it exists.'''
+	channel = channel.strip('#')
 	delay = 20
 	json_data = get_channel_videos(channel)
 	replay_data = get_latest_video_data(json_data)
