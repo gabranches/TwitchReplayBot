@@ -1,9 +1,11 @@
 from irc import IrcConnection
-from config import CLIENT_ID, CLIENT_SECRET, CHANNELS, TOKEN
+from config import CLIENT_ID, CLIENT_SECRET, TOKEN
+from twitch.streams import CHANNELS
+
 
 
 def run():
-	channel_list = CHANNELS.split(',')
+	channel_list = CHANNELS.lower().split(',')
 	irc_conn = IrcConnection(TOKEN, channel_list)
 	irc_conn.connect()
 

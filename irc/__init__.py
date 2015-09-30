@@ -2,6 +2,7 @@ import socket
 import sys
 import re
 import twitch
+import time
 
 
 class IrcConnection(object):
@@ -19,6 +20,7 @@ class IrcConnection(object):
 
 	def connect(self):
 		'''Connects to IRC.'''
+
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		s.connect((self.host, self.port))
 		s.send('PASS oauth:{}\r\n'.format(self.token).encode())
@@ -32,8 +34,8 @@ class IrcConnection(object):
 			print('Joining #%s' % ch)
 
 		# 'Listen' block
+		last_request = 0
 		while True:
-			last_request = 0
 			self.readbuffer = self.readbuffer + s.recv(4096).decode()
 			temp = self.readbuffer.split('\n')
 			self.readbuffer = temp.pop()
@@ -42,26 +44,34 @@ class IrcConnection(object):
 				line = line.rstrip()
 				if get_message_type(line) == 'PRIVMSG':
 					message = split_line(line)
-					print(message['channel'] + ' ' + message['author'] + 
-							' ' + message['text'])
-					check_if_cmd(message, s)
 
+					# print(message['channel'] + ' ' + message['author'] + 
+					# 		' ' + message['text'])
+
+					last_request = check_if_cmd(message, s, last_request, int(time.time()))
+		
 				if line.split()[0] == 'PING':
 					s.send('PONG {}\r\n'.format(line[1]).encode())
 
-
-def check_if_cmd(message, s):
+def check_if_cmd(message, s, last_request, request_time):
 	'''Check if the message contains a request for a replay'''
-	if message['text'] == ':!replay':
+
+	request_interval = request_time - last_request
+
+	if message['text'] == ':!replay' and request_interval > 5:
 		replay_url = twitch.get_replay(message['channel'], 90)
-		print(replay_url)
+
 		if replay_url:
 			s.send('PRIVMSG {0} :Replay VOD {1}\r\n'.format(message['channel'], replay_url).encode())
+			return request_time
 		else:
 			s.send('PRIVMSG {0} :VOD not available yet.\r\n'.format(message['channel']).encode())
+			return request_time
+	return last_request
 
 def get_message_type(msg):
 	'''Determines if the message is a PRIVMSG.'''
+
 	p = re.compile(r'PRIVMSG')
 	m = p.search(msg)
 	if m:
@@ -71,6 +81,7 @@ def get_message_type(msg):
 
 def split_line(line):
 	'''Splits the line into a list with the author, channel, and message.'''
+
 	message = {}
 	line = line.split()
 
