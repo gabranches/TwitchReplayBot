@@ -2,3 +2,4 @@ venv/
 tests/
 __pycache__/
 *.pyc
+twitch/streams.py
